@@ -8,7 +8,7 @@
 	Modified ..: 2020-09-01
 	License ...: MIT
 	GitHub ....: https://github.com/jNizM/NVIDIA_NVML
-	Forum .....: https://www.autohotkey.com/boards/viewtopic.php?t=
+	Forum .....: https://www.autohotkey.com/boards/viewtopic.php?t=95175
 */
 
 ; SCRIPT DIRECTIVES =========================================================================================================================================================
