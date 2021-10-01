@@ -2,7 +2,9 @@
 
 
 ## Features
+* retrieves power usage for this GPU in milliwatts and its associated circuitry (e.g. memory)
 * retrieves the NVML index of this device
+* retrieves the amount of used, free and total memory available on the device, in bytes
 * retrieves the brand of this device
 * retrieves the current temperature readings for the device, in degrees C
 * retrieves the current utilization rates for the device's major subsystems
@@ -11,6 +13,7 @@
 * retrieves the number of compute devices in the system. A compute device is a single GPU
 * retrieves the version of the NVML library
 * retrieves the version of the system's graphics driver
+* retrieves total energy consumption for this GPU in millijoules (mJ) since the driver was last reloaded
 
 
 ## Examples

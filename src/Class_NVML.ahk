@@ -77,15 +77,19 @@ class DEVICE extends NVML
 	; // Retrieves the brand of this device.
 	; //
 	; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	static GetBrand(hDevice)
+	static GetBrand(hDevice := 0)
 	{
 		static NVML_BRAND_TYPE := Map(0, "UNKNOWN", 1, "QUADRO", 2, "TESLA", 3, "NVS", 4, "GRID", 5, "GEFORCE", 6, "TITAN"
 		                            , 7, "NVIDIA_VAPPS", 8, "NVIDIA_VPC", 9, "NVIDIA_VCS", 10, "NVIDIA_VWS", 11, "NVIDIA_VGAMING"
 		                            , 12, "QUADRO_RTX", 13, "NVIDIA_RTX", 14, "NVIDIA", 15, "GEFORCE_RTX", 16, "TITAN_RTX")
 
+		if !(hDevice)
+		{
+			hDevice := this.GetHandleByIndex()
+		}
 		if !(NvStatus := DllCall("nvml\nvmlDeviceGetBrand", "Ptr", hDevice, "Int*", &BrandType := 0, "CDecl"))
 		{
-			return NVML_BRAND_TYPE[BrandType]
+			return NVML_BRAND_TYPE[BrandType]   ; [OUT] brand of this device
 		}
 
 		return this.ErrorString(NvStatus)
@@ -104,7 +108,7 @@ class DEVICE extends NVML
 	{
 		if !(NvStatus := DllCall("nvml\nvmlDeviceGetCount_v2", "UInt*", &DeviceCount := 0, "CDecl"))
 		{
-			return DeviceCount
+			return DeviceCount   ; [OUT] number of compute devices
 		}
 
 		return this.ErrorString(NvStatus)
@@ -119,11 +123,15 @@ class DEVICE extends NVML
 	; // Retrieves the intended operating speed of the device's fan.
 	; //
 	; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	static GetFanSpeed(hDevice)
+	static GetFanSpeed(hDevice := 0)
 	{
+		if !(hDevice)
+		{
+			hDevice := this.GetHandleByIndex()
+		}
 		if !(NvStatus := DllCall("nvml\nvmlDeviceGetFanSpeed", "Ptr", hDevice, "UInt*", &FanSpeed := 0, "CDecl"))
 		{
-			return FanSpeed
+			return FanSpeed   ; [OUT] intended operating speed of the device's fan
 		}
 
 		return this.ErrorString(NvStatus)
@@ -142,7 +150,7 @@ class DEVICE extends NVML
 	{
 		if !(NvStatus := DllCall("nvml\nvmlDeviceGetHandleByIndex_v2", "UInt", Index, "Ptr*", &hDevice := 0, "CDecl"))
 		{
-			return hDevice
+			return hDevice   ; [OUT] handle for a particular device, based on its index
 		}
 
 		return this.ErrorString(NvStatus)
@@ -157,12 +165,67 @@ class DEVICE extends NVML
 	; // Retrieves the name of this device.
 	; //
 	; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	static GetName(hDevice)
+	static GetName(hDevice := 0)
 	{
-		deviceName := Buffer(Const.NVML_DEVICE_NAME_V2_BUFFER_SIZE, 0)
-		if !(NvStatus := DllCall("nvml\nvmlDeviceGetName", "Ptr", hDevice, "Ptr", deviceName, "UInt", Const.NVML_DEVICE_NAME_V2_BUFFER_SIZE, "CDecl"))
+		if !(hDevice)
 		{
-			return StrGet(deviceName, "CP0")
+			hDevice := this.GetHandleByIndex()
+		}
+		DeviceName := Buffer(Const.NVML_DEVICE_NAME_V2_BUFFER_SIZE, 0)
+		if !(NvStatus := DllCall("nvml\nvmlDeviceGetName", "Ptr", hDevice, "Ptr", DeviceName, "UInt", Const.NVML_DEVICE_NAME_V2_BUFFER_SIZE, "CDecl"))
+		{
+			return StrGet(DeviceName, "CP0")   ; [OUT] name of this device
+		}
+
+		return this.ErrorString(NvStatus)
+	}
+
+
+
+	; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	; //
+	; // FUNCTION NAME: DEVICE.GetMemoryInfo
+	; //
+	; // Retrieves the amount of used, free and total memory available on the device, in bytes.
+	; //
+	; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	static GetMemoryInfo(hDevice := 0)
+	{
+		if !(hDevice)
+		{
+			hDevice := this.GetHandleByIndex()
+		}
+		MemoryInfo := Buffer(24, 0)
+		if !(NvStatus := DllCall("nvml\nvmlDeviceGetMemoryInfo", "Ptr", hDevice, "Ptr", MemoryInfo, "CDecl"))
+		{
+			MEMORY := Map()
+			MEMORY["Total"] := NumGet(MemoryInfo,  0, "UInt64")   ; [OUT] Total installed FB memory (in bytes)
+			MEMORY["Free"]  := NumGet(MemoryInfo,  8, "UInt64")   ; [OUT] Unallocated FB memory (in bytes)
+			MEMORY["Used"]  := NumGet(MemoryInfo, 16, "UInt64")   ; [OUT] Allocated FB memory (in bytes)
+			return MEMORY
+		}
+
+		return this.ErrorString(NvStatus)
+	}
+
+
+
+	; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	; //
+	; // FUNCTION NAME: DEVICE.GetPowerUsage
+	; //
+	; // Retrieves power usage for this GPU in milliwatts and its associated circuitry (e.g. memory)
+	; //
+	; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	static GetPowerUsage(hDevice := 0)
+	{
+		if !(hDevice)
+		{
+			hDevice := this.GetHandleByIndex()
+		}
+		if !(NvStatus := DllCall("nvml\nvmlDeviceGetPowerUsage", "Ptr", hDevice, "UInt*", &PowerUsage := 0, "CDecl"))
+		{
+			return PowerUsage   ; [OUT] power usage (in milliwatts)
 		}
 
 		return this.ErrorString(NvStatus)
@@ -183,13 +246,36 @@ class DEVICE extends NVML
 		{
 			hDevice := this.GetHandleByIndex()
 		}
-		if !(NvStatus := DllCall("nvml\nvmlDeviceGetTemperature", "Ptr", hDevice, "Int", Const.NVML_TEMPERATURE_GPU, "UInt*", &Temp := 0, "CDecl"))
+		if !(NvStatus := DllCall("nvml\nvmlDeviceGetTemperature", "Ptr", hDevice, "Int", Const.NVML_TEMPERATURE_GPU, "UInt*", &Temperature := 0, "CDecl"))
 		{
-			return Temp
+			return Temperature   ; [OUT] current temperature (in degrees C)
 		}
 
 		return this.ErrorString(NvStatus)
 	}
+
+
+	; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	; //
+	; // FUNCTION NAME: DEVICE.GetTotalEnergyConsumption
+	; //
+	; // Retrieves total energy consumption for this GPU in millijoules (mJ) since the driver was last reloaded
+	; //
+	; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	static GetTotalEnergyConsumption(hDevice := 0)
+	{
+		if !(hDevice)
+		{
+			hDevice := this.GetHandleByIndex()
+		}
+		if !(NvStatus := DllCall("nvml\nvmlDeviceGetTotalEnergyConsumption", "Ptr", hDevice, "UInt64*", &EnergyConsumption := 0, "CDecl"))
+		{
+			return EnergyConsumption   ; [OUT] total energy (in millijoules (mJ))
+		}
+
+		return this.ErrorString(NvStatus)
+	}
+
 
 
 	; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -205,13 +291,13 @@ class DEVICE extends NVML
 		{
 			hDevice := this.GetHandleByIndex()
 		}
-		Utilization := Buffer(8, 0)
-		if !(NvStatus := DllCall("nvml\nvmlDeviceGetUtilizationRates", "Ptr", hDevice, "Ptr", Utilization, "CDecl"))
+		UtilizationRates := Buffer(8, 0)
+		if !(NvStatus := DllCall("nvml\nvmlDeviceGetUtilizationRates", "Ptr", hDevice, "Ptr", UtilizationRates, "CDecl"))
 		{
-			UTIL := Map()
-			UTIL["GPU"]    := NumGet(Utilization, 0, "UInt")
-			UTIL["MEMORY"] := NumGet(Utilization, 4, "UInt")
-			return UTIL
+			UTILIZATION := Map()
+			UTILIZATION["GPU"]    := NumGet(UtilizationRates, 0, "UInt")   ; [OUT] percent of time over the past sample period during which one or more kernels was executing on the GPU
+			UTILIZATION["MEMORY"] := NumGet(UtilizationRates, 4, "UInt")   ; [OUT] percent of time over the past sample period during which global (device) memory was being read or written
+			return UTILIZATION
 		}
 
 		return this.ErrorString(NvStatus)
@@ -238,7 +324,7 @@ class SYSTEM extends NVML
 		Version := Buffer(Const.NVML_SYSTEM_DRIVER_VERSION_BUFFER_SIZE, 0)
 		if !(NvStatus := DllCall("nvml\nvmlSystemGetDriverVersion", "Ptr", Version, "UInt", Const.NVML_SYSTEM_DRIVER_VERSION_BUFFER_SIZE))
 		{
-			return StrGet(Version, "CP0")
+			return StrGet(Version, "CP0")   ; [OUT] version identifier (as an alphanumeric string)
 		}
 
 		return this.ErrorString(NvStatus)
@@ -258,7 +344,7 @@ class SYSTEM extends NVML
 		Version := Buffer(Const.NVML_SYSTEM_NVML_VERSION_BUFFER_SIZE, 0)
 		if !(NvStatus := DllCall("nvml\nvmlSystemGetNVMLVersion", "Ptr", Version, "UInt", Const.NVML_SYSTEM_NVML_VERSION_BUFFER_SIZE))
 		{
-			return StrGet(Version, "CP0")
+			return StrGet(Version, "CP0")   ; [OUT] version of the NVML library
 		}
 
 		return this.ErrorString(NvStatus)
@@ -277,7 +363,6 @@ class Const extends NVML
 	static NVML_SYSTEM_NVML_VERSION_BUFFER_SIZE   := 80
 	static NVML_TEMPERATURE_GPU                   := 0
 }
-
 
 
 ; ===========================================================================================================================================================================
