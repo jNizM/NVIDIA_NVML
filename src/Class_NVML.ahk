@@ -314,6 +314,25 @@ class SYSTEM extends NVML
 
 	; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	; //
+	; // FUNCTION NAME: SYSTEM.GetCudaDriverVersion
+	; //
+	; // Retrieves the version of the CUDA driver.
+	; //
+	; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	static GetCudaDriverVersion()
+	{
+		if !(NvStatus := DllCall("nvml\nvmlSystemGetCudaDriverVersion", "Int*", &CudaDriverVersion := 0))
+		{
+			return CudaDriverVersion   ; [OUT] version of the CUDA driver
+		}
+
+		return this.ErrorString(NvStatus)
+	}
+
+
+
+	; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	; //
 	; // FUNCTION NAME: SYSTEM.GetDriverVersion
 	; //
 	; // Retrieves the version of the system's graphics driver.
@@ -322,7 +341,7 @@ class SYSTEM extends NVML
 	static GetDriverVersion()
 	{
 		Version := Buffer(Const.NVML_SYSTEM_DRIVER_VERSION_BUFFER_SIZE, 0)
-		if !(NvStatus := DllCall("nvml\nvmlSystemGetDriverVersion", "Ptr", Version, "UInt", Const.NVML_SYSTEM_DRIVER_VERSION_BUFFER_SIZE))
+		if !(NvStatus := DllCall("nvml\nvmlSystemGetDriverVersion", "Ptr", Version, "UInt", Const.NVML_SYSTEM_DRIVER_VERSION_BUFFER_SIZE, "CDecl"))
 		{
 			return StrGet(Version, "CP0")   ; [OUT] version identifier (as an alphanumeric string)
 		}
@@ -342,7 +361,7 @@ class SYSTEM extends NVML
 	static GetNVMLVersion()
 	{
 		Version := Buffer(Const.NVML_SYSTEM_NVML_VERSION_BUFFER_SIZE, 0)
-		if !(NvStatus := DllCall("nvml\nvmlSystemGetNVMLVersion", "Ptr", Version, "UInt", Const.NVML_SYSTEM_NVML_VERSION_BUFFER_SIZE))
+		if !(NvStatus := DllCall("nvml\nvmlSystemGetNVMLVersion", "Ptr", Version, "UInt", Const.NVML_SYSTEM_NVML_VERSION_BUFFER_SIZE, "CDecl"))
 		{
 			return StrGet(Version, "CP0")   ; [OUT] version of the NVML library
 		}
