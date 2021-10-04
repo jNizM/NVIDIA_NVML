@@ -21,7 +21,7 @@
 
 
 ## Examples
-todo
+![Class_NVML_Example](img/Class_NVML_Example.png)
 
 
 ## Supported products
