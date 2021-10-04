@@ -2,12 +2,16 @@
 
 
 ## Features
+* retrieves attributes (engine counts etc.)
+* retrieves minor number
 * retrieves power usage for this GPU in milliwatts and its associated circuitry (e.g. memory)
 * retrieves the NVML index of this device
 * retrieves the amount of used, free and total memory available on the device, in bytes
 * retrieves the brand of this device
 * retrieves the current temperature readings for the device, in degrees C
 * retrieves the current utilization rates for the device's major subsystems
+* retrieves the global infoROM image version
+* retrieves the globally unique immutable UUID
 * retrieves the intended operating speed of the device's fan
 * retrieves the name of this device
 * retrieves the number of compute devices in the system. A compute device is a single GPU

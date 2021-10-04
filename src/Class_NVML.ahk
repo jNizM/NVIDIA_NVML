@@ -5,7 +5,7 @@
 
 	Author ....: jNizM
 	Released ..: 2020-09-29
-	Modified ..: 2020-09-01
+	Modified ..: 2020-09-03
 	License ...: MIT
 	GitHub ....: https://github.com/jNizM/NVIDIA_NVML
 	Forum .....: https://www.autohotkey.com/boards/viewtopic.php?t=95175
@@ -118,9 +118,44 @@ class DEVICE extends NVML
 
 	; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	; //
+	; // FUNCTION NAME: DEVICE.GetAttributes
+	; //
+	; // Get attributes (engine counts etc.) for the given NVML device handle.
+	; //
+	; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	static GetAttributes(hDevice := 0)
+	{
+		if !(hDevice)
+		{
+			hDevice := this.GetHandleByIndex()
+		}
+		Attributes := Buffer(40, 0)
+		if !(NvStatus := DllCall("nvml\nvmlDeviceGetAttributes_v2", "Ptr", hDevice, "Ptr", Attributes, "CDecl"))
+		{
+			ATTR := Map()
+			ATTR["multiprocessorCount"]       := NumGet(Attributes,  0, "UInt")     ; [OUT] Streaming Multiprocessor count
+			ATTR["sharedCopyEngineCount"]     := NumGet(Attributes,  4, "UInt")     ; [OUT] Shared Copy Engine count
+			ATTR["sharedDecoderCount"]        := NumGet(Attributes,  8, "UInt")     ; [OUT] Shared Decoder Engine count
+			ATTR["sharedEncoderCount"]        := NumGet(Attributes, 12, "UInt")     ; [OUT] Shared Encoder Engine count
+			ATTR["sharedJpegCount"]           := NumGet(Attributes, 16, "UInt")     ; [OUT] Shared JPEG Engine count
+			ATTR["sharedOfaCount"]            := NumGet(Attributes, 20, "UInt")     ; [OUT] Shared OFA Engine count
+			ATTR["gpuInstanceSliceCount"]     := NumGet(Attributes, 24, "UInt")     ; [OUT] GPU instance slice count
+			ATTR["computeInstanceSliceCount"] := NumGet(Attributes, 28, "UInt")     ; [OUT] Compute instance slice count
+			ATTR["memorySizeMB"]              := NumGet(Attributes, 36, "UInt64")   ; [OUT] Device memory size (in MiB)
+			return ATTR
+		}
+
+		return this.ErrorString(NvStatus)
+	}
+
+
+
+	; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	; //
 	; // FUNCTION NAME: DEVICE.GetFanSpeed
 	; //
 	; // Retrieves the intended operating speed of the device's fan.
+	; // Note: The reported speed is the intended fan speed. If the fan is physically blocked and unable to spin, the output will not match the actual fan speed.
 	; //
 	; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	static GetFanSpeed(hDevice := 0)
@@ -151,6 +186,30 @@ class DEVICE extends NVML
 		if !(NvStatus := DllCall("nvml\nvmlDeviceGetHandleByIndex_v2", "UInt", Index, "Ptr*", &hDevice := 0, "CDecl"))
 		{
 			return hDevice   ; [OUT] handle for a particular device, based on its index
+		}
+
+		return this.ErrorString(NvStatus)
+	}
+
+
+
+	; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	; //
+	; // FUNCTION NAME: DEVICE.GetInforomImageVersion
+	; //
+	; // Retrieves the global infoROM image version. For all products with an inforom.
+	; //
+	; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	static GetInforomImageVersion(hDevice := 0)
+	{
+		if !(hDevice)
+		{
+			hDevice := this.GetHandleByIndex()
+		}
+		Version := Buffer(Const.NVML_DEVICE_INFOROM_VERSION_BUFFER_SIZE, 0)
+		if !(NvStatus := DllCall("nvml\nvmlDeviceGetInforomImageVersion", "Ptr", hDevice, "Ptr", Version, "UInt", Const.NVML_DEVICE_INFOROM_VERSION_BUFFER_SIZE, "CDecl"))
+		{
+			return StrGet(Version, "CP0")   ; [OUT] global infoROM image version
 		}
 
 		return this.ErrorString(NvStatus)
@@ -212,6 +271,30 @@ class DEVICE extends NVML
 
 	; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	; //
+	; // FUNCTION NAME: DEVICE.GetMinorNumber
+	; //
+	; // Retrieves minor number for the device.
+	; // The minor number for the device is such that the Nvidia device node file for each GPU will have the form /dev/nvidia[minor number].
+	; //
+	; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	static GetMinorNumber(hDevice := 0)
+	{
+		if !(hDevice)
+		{
+			hDevice := this.GetHandleByIndex()
+		}
+		if !(NvStatus := DllCall("nvml\nvmlDeviceGetMinorNumber", "Ptr", hDevice, "UInt*", &MinorNumber := 0, "CDecl"))
+		{
+			return MinorNumber   ; [OUT] minor number for the devic
+		}
+
+		return this.ErrorString(NvStatus)
+	}
+
+
+
+	; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	; //
 	; // FUNCTION NAME: DEVICE.GetPowerUsage
 	; //
 	; // Retrieves power usage for this GPU in milliwatts and its associated circuitry (e.g. memory)
@@ -253,6 +336,7 @@ class DEVICE extends NVML
 
 		return this.ErrorString(NvStatus)
 	}
+
 
 
 	; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -298,6 +382,30 @@ class DEVICE extends NVML
 			UTILIZATION["GPU"]    := NumGet(UtilizationRates, 0, "UInt")   ; [OUT] percent of time over the past sample period during which one or more kernels was executing on the GPU
 			UTILIZATION["MEMORY"] := NumGet(UtilizationRates, 4, "UInt")   ; [OUT] percent of time over the past sample period during which global (device) memory was being read or written
 			return UTILIZATION
+		}
+
+		return this.ErrorString(NvStatus)
+	}
+
+
+
+	; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	; //
+	; // FUNCTION NAME: DEVICE.GetUUID
+	; //
+	; // Retrieves the globally unique immutable UUID associated with this device, as a 5 part hexadecimal string, that augments the immutable, board serial identifier.
+	; //
+	; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	static GetUUID(hDevice := 0)
+	{
+		if !(hDevice)
+		{
+			hDevice := this.GetHandleByIndex()
+		}
+		UUID := Buffer(Const.NVML_DEVICE_UUID_V2_BUFFER_SIZE, 0)
+		if !(NvStatus := DllCall("nvml\nvmlDeviceGetUUID", "Ptr", hDevice, "Ptr", UUID, "UInt", Const.NVML_DEVICE_UUID_V2_BUFFER_SIZE, "CDecl"))
+		{
+			return StrGet(UUID, "CP0")   ; [OUT] globally unique immutable UUID
 		}
 
 		return this.ErrorString(NvStatus)
@@ -377,10 +485,12 @@ class SYSTEM extends NVML
 
 class Const extends NVML
 {
-	static NVML_DEVICE_NAME_V2_BUFFER_SIZE        := 96
-	static NVML_SYSTEM_DRIVER_VERSION_BUFFER_SIZE := 80
-	static NVML_SYSTEM_NVML_VERSION_BUFFER_SIZE   := 80
-	static NVML_TEMPERATURE_GPU                   := 0
+	static NVML_DEVICE_INFOROM_VERSION_BUFFER_SIZE := 16
+	static NVML_DEVICE_NAME_V2_BUFFER_SIZE         := 96
+	static NVML_DEVICE_UUID_V2_BUFFER_SIZE         := 96
+	static NVML_SYSTEM_DRIVER_VERSION_BUFFER_SIZE  := 80
+	static NVML_SYSTEM_NVML_VERSION_BUFFER_SIZE    := 80
+	static NVML_TEMPERATURE_GPU                    := 0
 }
 
 
