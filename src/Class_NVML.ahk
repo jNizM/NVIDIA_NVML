@@ -4,8 +4,8 @@
 	AutoHotkey wrapper for NVIDIA NVML API
 
 	Author ....: jNizM
-	Released ..: 2020-09-29
-	Modified ..: 2020-09-03
+	Released ..: 2021-09-29
+	Modified ..: 2021-10-11
 	License ...: MIT
 	GitHub ....: https://github.com/jNizM/NVIDIA_NVML
 	Forum .....: https://www.autohotkey.com/boards/viewtopic.php?t=95175
@@ -27,7 +27,7 @@ class NVML
 	{
 		if !(this.hModule := DllCall("LoadLibrary", "Str", "nvml.dll", "Ptr"))
 		{
-			MsgBox("NVML could not be startet!`n`nThe program will exit!", A_ThisFunc)
+			MsgBox("NVML could not be started!`n`nThe program will exit!", A_ThisFunc)
 			ExitApp
 		}
 		if (NvStatus := DllCall("nvml\nvmlInit_v2", "CDecl") != 0)
