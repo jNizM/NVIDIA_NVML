@@ -40,7 +40,7 @@
 
 
 ## Questions / Bugs / Issues
-If you notice any kind of bugs or issues, report them on the [AHK Thread](https://www.autohotkey.com/boards/viewtopic.php?t=94333). Same for any kind of questions.
+If you notice any kind of bugs or issues, report them on the [AHK Thread](https://www.autohotkey.com/boards/viewtopic.php?t=95175). Same for any kind of questions.
 
 
 ## Copyright and License
