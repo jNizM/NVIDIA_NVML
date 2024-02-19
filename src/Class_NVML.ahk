@@ -5,7 +5,7 @@
 
 	Author ....: jNizM
 	Released ..: 2021-09-29
-	Modified ..: 2021-10-11
+	Modified ..: 2024-02-19
 	License ...: MIT
 	GitHub ....: https://github.com/jNizM/NVIDIA_NVML
 	Forum .....: https://www.autohotkey.com/boards/viewtopic.php?t=95175
@@ -286,6 +286,29 @@ class DEVICE extends NVML
 		if !(NvStatus := DllCall("nvml\nvmlDeviceGetMinorNumber", "Ptr", hDevice, "UInt*", &MinorNumber := 0, "CDecl"))
 		{
 			return MinorNumber   ; [OUT] minor number for the devic
+		}
+
+		return this.ErrorString(NvStatus)
+	}
+
+
+
+	; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	; //
+	; // FUNCTION NAME: DEVICE.GetPerformanceState
+	; //
+	; // Retrieves the current performance state for the device.
+	; //
+	; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	static GetPerformanceState(hDevice := 0)
+	{
+		if !(hDevice)
+		{
+			hDevice := this.GetHandleByIndex()
+		}
+		if !(NvStatus := DllCall("nvml\nvmlDeviceGetPerformanceState", "Ptr", hDevice, "Int*", &pState := 0, "CDecl"))
+		{
+			return (pState = 32) ? "Unknown performance state" : pState   ; [OUT] current performance state of this device
 		}
 
 		return this.ErrorString(NvStatus)
